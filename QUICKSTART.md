@@ -14,7 +14,7 @@ Get up and running with the Document Scanner in under 5 minutes!
    open index.html
    ```
 
-2. **Use it**:
+3. **Use it**:
    - Click "Choose Image" or try an example
    - Click "Process Image"
    - Select 4 corners by clicking on the image
