@@ -28,10 +28,13 @@ jobs:
 
       - name: Assemble site from web/
         run: |
-          mkdir -p _site
+          mkdir -p _site/examples
           cp -r web/* _site/
+          cp examples/input1.png examples/input2.png _site/examples/
           touch _site/.nojekyll
           test -f _site/index.html
+          test -f _site/examples/input1.png
+          test -f _site/examples/input2.png
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

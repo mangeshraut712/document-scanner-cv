@@ -156,7 +156,7 @@ class DocumentScanner {
             console.error('Failed to load example image');
             alert('Could not load example image. Please upload your own image.');
         };
-        img.src = `../examples/input${num}.png`;
+        img.src = `examples/input${num}.png`;
     }
     
     setExampleCorners(num) {

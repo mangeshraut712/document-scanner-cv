@@ -170,7 +170,7 @@ cd src/matlab
 ```
 
 ### Web: Images not loading
-Make sure you're opening from the `web/` directory and example images are in `examples/`.
+Make sure you're opening from the `web/` directory (example images live in `web/examples/`).
 
 ### Tests failing
 Install test dependencies:
