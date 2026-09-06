@@ -6,7 +6,9 @@ Get up and running with the Document Scanner in under 5 minutes!
 
 ### 🌐 Web Demo (Easiest - No Installation!)
 
-1. **Open the demo**:
+1. **Open the live demo**: [https://mangeshraut712.github.io/document-scanner-cv/](https://mangeshraut712.github.io/document-scanner-cv/)
+
+2. **Or open locally**:
    ```bash
    cd web
    open index.html

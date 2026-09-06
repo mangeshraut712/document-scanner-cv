@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-MIT-000000.svg?style=flat-square)](LICENSE)
 [![CI/CD](https://img.shields.io/badge/CI/CD-Passing-000000.svg?style=flat-square&logo=github-actions)](https://github.com)
 
-[Live Demo](https://mangeshraut712.github.io/Document-Scanner---Computer-Vision-Project) · [Documentation](#-documentation) · [Quick Start](#-quick-start) · [API Reference](#-api-reference)
+[Live Demo](https://mangeshraut712.github.io/document-scanner-cv/) · [Documentation](#-documentation) · [Quick Start](#-quick-start) · [API Reference](#-api-reference)
 
 ![Hero Banner](docs/images/hero-banner.png)
 
