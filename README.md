@@ -76,6 +76,24 @@ A **state-of-the-art document scanning system** that transforms photographs of d
 
 ---
 
+## Screenshots
+
+Framed captures of the live web demo (current UI).
+
+<div align="center">
+
+<img src="docs/screenshots/01-home.webp" alt="From a photo to a flat page" width="720" />
+
+<img src="docs/screenshots/02-features.webp" alt="Edges, lines, then corners" width="720" />
+
+<img src="docs/screenshots/03-demo.webp" alt="Drop a page. See every step" width="720" />
+
+<img src="docs/screenshots/04-algorithm.webp" alt="The math behind the scan" width="720" />
+
+</div>
+
+---
+
 ## 🚀 Quick Start
 
 ### Web Demo (Zero Installation)
