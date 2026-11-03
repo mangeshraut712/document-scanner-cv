@@ -6,8 +6,8 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/mangeshraut712/Document-Scanner---Computer-Vision-Project.git
-   cd Document-Scanner---Computer-Vision-Project
+   git clone https://github.com/mangeshraut712/document-scanner-cv.git
+   cd document-scanner-cv
    ```
 
 2. **Create a feature branch**
