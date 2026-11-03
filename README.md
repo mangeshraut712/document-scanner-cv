@@ -175,8 +175,7 @@ document-scanner/
 └── 📦 Assets & Config
     ├── examples/                # Sample images
     ├── outputs/                 # Processing results
-    ├── requirements.txt         # Python dependencies
-    └── pyproject.toml           # Modern Python config
+    └── requirements.txt         # Python dependencies
 ```
 
 ---
