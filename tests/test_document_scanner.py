@@ -116,6 +116,23 @@ class TestDocumentScanner:
         assert scanner.rectified_image is not None
         assert scanner.rectified_image.shape == (500, 400, 3)
 
+    def test_rectification_rejects_non_positive_sizes(self, sample_image_path):
+        """Zero or negative output sizes should not reach OpenCV."""
+        scanner = DocumentScanner(sample_image_path)
+        corners = np.array(
+            [[50, 50], [350, 50], [350, 450], [50, 450]], dtype=np.float32
+        )
+        scanner.find_corners(corners)
+
+        with pytest.raises(ValueError, match="output_width"):
+            scanner.rectify_image(0, 500)
+        with pytest.raises(ValueError, match="output_height"):
+            scanner.rectify_image(400, -1)
+
+        scanner.rectify_image()
+        assert scanner.rectified_image.shape[0] == int(11 * 300)
+        assert scanner.rectified_image.shape[1] == int(8.5 * 300)
+
     def test_method_chaining(self, sample_image_path):
         """Test that methods can be chained"""
         scanner = DocumentScanner(sample_image_path)
