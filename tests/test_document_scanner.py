@@ -204,3 +204,33 @@ def test_integration_full_pipeline(tmp_path):
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+def _write(tmp_path, img):
+    path = str(tmp_path / "img.png")
+    cv2.imwrite(path, img)
+    return path
+
+
+def test_vertical_edge_is_one_peak_not_two(tmp_path):
+    """theta=0 and theta=180 are the same line; it must not be counted twice."""
+    img = np.zeros((120, 120, 3), dtype=np.uint8)
+    img[:, 60:] = 255
+    scanner = DocumentScanner(_write(tmp_path, img))
+    scanner.num_peaks = 2
+    scanner.detect_edges().compute_hough_transform().detect_lines()
+    theta = scanner.hough_transform["theta_range"]
+    assert theta.max() < 180
+    rho = scanner.hough_transform["rho_range"]
+    lines = [(int(rho[r]), int(theta[t])) for r, t in scanner.detected_lines["peaks"]]
+    # Normalise near-vertical lines across the 0/180 wrap: (rho, 179) == (-rho, -1).
+    normal = [(-r, t - 180) if t > 90 else (r, t) for r, t in lines]
+    for i, (r1, t1) in enumerate(normal):
+        for r2, t2 in normal[i + 1:]:
+            assert not (abs(r1 - r2) <= 10 and abs(t1 - t2) <= 10), lines
+
+
+def test_blank_image_has_no_lines(tmp_path):
+    scanner = DocumentScanner(_write(tmp_path, np.zeros((50, 50, 3), dtype=np.uint8)))
+    scanner.detect_edges().compute_hough_transform().detect_lines()
+    assert scanner.detected_lines["peaks"] == []
