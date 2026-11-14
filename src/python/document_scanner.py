@@ -11,15 +11,16 @@ from typing import Optional
 import matplotlib.pyplot as plt
 
 
-
-def _require_positive_int(value, name: str) -> int:
+def _require_positive_int(value: object, name: str) -> int:
     """Return a positive integer size, or raise a clear ValueError."""
-    try:
-        if isinstance(value, bool) or isinstance(value, float) and not value.is_integer():
-            raise ValueError
+    if isinstance(value, bool) or not isinstance(value, (int, float, np.integer)):
+        raise ValueError(f"{name} must be a positive integer, got {value!r}")
+    if isinstance(value, float):
+        if not value.is_integer():
+            raise ValueError(f"{name} must be a positive integer, got {value!r}")
         size = int(value)
-    except (TypeError, ValueError):
-        raise ValueError(f"{name} must be a positive integer, got {value!r}") from None
+    else:
+        size = int(value)
     if size < 1:
         raise ValueError(f"{name} must be a positive integer, got {value!r}")
     return size
