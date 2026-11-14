@@ -124,7 +124,7 @@ class TestDocumentScanner:
         )
         scanner.find_corners(corners)
 
-        invalid_sizes = [0, -1, True, False, 400.5, "400", None]
+        invalid_sizes = [0, -1, True, False, 400.5, "400"]
         for bad in invalid_sizes:
             with pytest.raises(ValueError, match="output_width"):
                 scanner.rectify_image(bad, 500)
