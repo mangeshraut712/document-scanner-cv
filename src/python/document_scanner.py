@@ -11,6 +11,21 @@ from typing import Optional
 import matplotlib.pyplot as plt
 
 
+def _require_positive_int(value: object, name: str) -> int:
+    """Return a positive integer size, or raise a clear ValueError."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, np.integer)):
+        raise ValueError(f"{name} must be a positive integer, got {value!r}")
+    if isinstance(value, float):
+        if not value.is_integer():
+            raise ValueError(f"{name} must be a positive integer, got {value!r}")
+        size = int(value)
+    else:
+        size = int(value)
+    if size < 1:
+        raise ValueError(f"{name} must be a positive integer, got {value!r}")
+    return size
+
+
 class DocumentScanner:
     """
     A class for detecting and rectifying documents in images.
@@ -180,6 +195,9 @@ class DocumentScanner:
             output_width = int(8.5 * 300)
         if output_height is None:
             output_height = int(11 * 300)
+
+        output_width = _require_positive_int(output_width, "output_width")
+        output_height = _require_positive_int(output_height, "output_height")
 
         # Define rectified corner points
         corners_rect = np.array(
