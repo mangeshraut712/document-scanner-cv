@@ -75,7 +75,9 @@ class DocumentScanner:
             Self for method chaining
         """
         # Define parameter ranges
-        theta_range = np.arange(0, 181, 1)
+        # Half-open [0, 180): theta=180 is theta=0 with rho negated, so including
+        # both would vote every vertical line into two separate peaks.
+        theta_range = np.arange(0, 180, 1)
         height, width = self.edge_image.shape
         rho_max = int(np.sqrt(height**2 + width**2))
         rho_range = np.arange(-rho_max, rho_max + 1, 1)
@@ -121,7 +123,8 @@ class DocumentScanner:
 
         for _ in range(self.num_peaks):
             max_val = np.max(H)
-            if max_val < thresh:
+            # An empty accumulator (no edge pixels) has no lines, not num_peaks zero bins.
+            if max_val == 0 or max_val < thresh:
                 break
 
             max_idx = np.argmax(H)
@@ -134,6 +137,17 @@ class DocumentScanner:
             theta_start = max(0, theta_idx - 10)
             theta_end = min(H.shape[1], theta_idx + 11)
             H[rho_start:rho_end, theta_start:theta_end] = 0
+
+            # theta wraps at 180 with rho negated: a line at theta=1 is the
+            # same as theta=179 with -rho. Suppress the mirrored bins too.
+            n_theta = H.shape[1]
+            m_rho = H.shape[0] - 1 - rho_idx
+            m_start = max(0, m_rho - 10)
+            m_end = min(H.shape[0], m_rho + 11)
+            if theta_idx - 10 < 0:
+                H[m_start:m_end, n_theta + theta_idx - 10 :] = 0
+            if theta_idx + 11 > n_theta:
+                H[m_start:m_end, : theta_idx + 11 - n_theta] = 0
 
         self.detected_lines = {
             "peaks": peaks,

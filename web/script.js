@@ -481,7 +481,8 @@ class DocumentScanner {
                 }
             }
             
-            if (max < threshold) break;
+            // An all-zero accumulator (no edges) has no lines.
+            if (max === 0 || max < threshold) break;
             
             peaks.push({ rho: maxRho, theta: maxTheta, value: max });
             
@@ -492,6 +493,11 @@ class DocumentScanner {
                     const t = maxTheta + dt;
                     if (r >= 0 && r < accumulator.length && t >= 0 && t < accumulator[0].length) {
                         accumulator[r][t] = 0;
+                    } else if (t < 0 || t >= accumulator[0].length) {
+                        // theta wraps at 180 with rho negated: (rho, -1) is (-rho, 179).
+                        const tw = (t + accumulator[0].length) % accumulator[0].length;
+                        const rw = accumulator.length - 1 - r;
+                        if (rw >= 0 && rw < accumulator.length) accumulator[rw][tw] = 0;
                     }
                 }
             }
