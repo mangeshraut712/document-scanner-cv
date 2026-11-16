@@ -8,7 +8,7 @@
 
 [![CV583](https://img.shields.io/badge/Course-CV583-000000.svg?style=flat-square&logo=academia)](https://github.com)
 [![MATLAB](https://img.shields.io/badge/MATLAB-R2023b-000000.svg?style=flat-square&logo=mathworks)](https://www.mathworks.com)
-[![Python](https://img.shields.io/badge/Python-3.8+-000000.svg?style=flat-square&logo=python)](https://www.python.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-000000.svg?style=flat-square&logo=python)](https://www.python.org)
 [![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-000000.svg?style=flat-square&logo=opencv)](https://opencv.org)
 [![License](https://img.shields.io/badge/License-MIT-000000.svg?style=flat-square)](LICENSE)
 [![CI/CD](https://img.shields.io/badge/CI/CD-Passing-000000.svg?style=flat-square&logo=github-actions)](https://github.com)
@@ -511,7 +511,7 @@ pytest tests/integration/ -v --slow
 ### Continuous Integration
 
 Our CI/CD pipeline runs:
-- ✅ Unit tests (Python 3.8, 3.9, 3.10, 3.11)
+- ✅ Unit tests (Python 3.10, 3.11, 3.12, 3.13)
 - ✅ Integration tests
 - ✅ Code linting (flake8, black, mypy)
 - ✅ Security scanning (bandit)
