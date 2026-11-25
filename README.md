@@ -108,7 +108,9 @@ pip install -r requirements.txt
 python -c "
 from src.python.document_scanner import DocumentScanner
 scanner = DocumentScanner('examples/input1.png')
-scanner.detect_edges().compute_hough_transform().rectify_image()
+# Manual corners for this sample, in top-left to bottom-left clockwise order.
+corners = [[140, 81], [410, 93], [400, 473], [24, 411]]
+scanner.find_corners(corners).rectify_image()
 scanner.save_rectified('output.png')
 "
 ```
@@ -119,7 +121,10 @@ scanner.save_rectified('output.png')
 % Add to path and run
 addpath('src/matlab')
 scanner = DocumentScanner('examples/input1.png');
-scanner.detectEdges().computeHoughTransform().rectifyImage();
+% Manual corners for this sample; use the visible page corners for other photos.
+corners = [140, 81; 410, 93; 400, 473; 24, 411];
+scanner = scanner.findCorners(corners);
+scanner = scanner.rectifyImage();
 scanner.visualize('rectified');
 ```
 
