@@ -116,6 +116,37 @@ class TestDocumentScanner:
         assert scanner.rectified_image is not None
         assert scanner.rectified_image.shape == (500, 400, 3)
 
+    def test_rectification_is_a_correct_homography(self, tmp_path):
+        """Rectifying an interior quad must yield the cropped, upright region.
+
+        test_rectification only checks the output shape, so a flipped dst
+        corner order, an inverted/rotated warp, or a BGR/RGB channel swap
+        inside rectify_image would still pass. Compare pixels against the
+        equivalent crop of the input to pin the geometry and channel order.
+        """
+        img = np.ones((500, 400, 3), dtype=np.uint8) * 255
+        # Asymmetric, coloured marker: only the top-left holds content, so
+        # any rotation/mirror moves it, and any channel swap changes colour.
+        cv2.rectangle(img, (50, 50), (150, 150), (0, 0, 255), -1)
+        img_path = tmp_path / "asymmetric.png"
+        cv2.imwrite(str(img_path), img)
+
+        scanner = DocumentScanner(str(img_path))
+        corners = np.array(
+            [[50, 50], [349, 50], [349, 449], [50, 449]], dtype=np.float32
+        )
+        scanner.find_corners(corners)
+        scanner.rectify_image(300, 400)
+
+        expected = scanner.input_image[50:450, 50:350]
+        assert scanner.rectified_image.shape == expected.shape
+        diff = np.abs(
+            scanner.rectified_image.astype(np.int16) - expected.astype(np.int16)
+        ).max(axis=2)
+        # Allow a ~1px interpolation band along marker edges (<1% of pixels);
+        # a displaced 100x100 block alone is ~8% of this 300x400 output.
+        assert np.mean(diff > 40) < 0.03
+
     def test_rectification_rejects_non_positive_sizes(self, sample_image_path):
         """Zero, negative, boolean, float, and non-numeric output sizes should not reach OpenCV."""
         scanner = DocumentScanner(sample_image_path)
