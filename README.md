@@ -23,7 +23,7 @@
 
 ## 🌟 Overview
 
-A **state-of-the-art document scanning system** that transforms photographs of documents into perfectly rectified, publication-ready images. Built with modern computer vision algorithms and designed for extensibility with deep learning integration.
+A document scanning project that takes a photograph of a page, finds edges and lines, accepts four manual corners, and warps the result to a rectified letter-size image. Python, MATLAB, and a browser preview share that pipeline. Automatic corner detection and deep-learning plugins are not implemented yet.
 
 ### ✨ Key Features
 
@@ -31,44 +31,36 @@ A **state-of-the-art document scanning system** that transforms photographs of d
 <tr>
 <td width="50%">
 
-**🔬 Advanced Algorithms**
-- Adaptive Gaussian smoothing with σ optimization
-- Multi-scale Sobel edge detection
-- Optimized Hough Transform with GPU support
-- Robust homography with RANSAC
-- Sub-pixel corner refinement
+**🔬 Algorithms (as shipped)**
+- Gaussian smoothing, then Sobel edge detection
+- Hough Transform line detection
+- Manual four-corner selection
+- Perspective rectification via OpenCV `getPerspectiveTransform` (Python) or a 3x3 homography (MATLAB)
 
 </td>
 <td width="50%">
 
-**🚀 Modern Architecture**
-- Object-oriented design patterns
-- Method chaining for fluent API
-- Async/await support (Python)
-- Real-time processing pipeline
-- Modular plugin system
+**🚀 Implementations**
+- Python and MATLAB classes with method chaining
+- Static HTML/CSS/JS browser demo
+- Shared pipeline: edges → Hough → lines → corners → rectify
 
 </td>
 </tr>
 <tr>
 <td>
 
-**🎨 Beautiful UI**
-- Minimalist shadcn/ui design
-- Apple-inspired animations
-- Japanese aesthetic principles
-- Dark/Light mode support
-- Responsive across devices
+**🎨 Web demo**
+- Minimal black-and-white page under `web/`
+- Follows `prefers-color-scheme` for a dark theme
+- Client-side preview only (no WebAssembly build)
 
 </td>
 <td>
 
-**⚡ Performance**
-- Vectorized NumPy operations
-- OpenCV hardware acceleration
-- WebAssembly for browser
-- Multi-threading support
-- Batch processing ready
+**⚡ Output sizes**
+- Python and MATLAB default to 8.5" x 11" at 300 DPI (2550 x 3300)
+- Browser preview samples to 850 x 1100 (about 100 DPI)
 
 </td>
 </tr>
@@ -136,109 +128,64 @@ scanner.visualize('rectified');
 ## 📁 Project Architecture
 
 ```
-document-scanner/
-├── 🎯 Core Implementations
-│   ├── src/matlab/              # MATLAB OOP implementation
-│   │   ├── DocumentScanner.m    # Main scanner class
-│   │   ├── run_scanner.m        # Example usage
-│   │   └── utils/               # Helper functions
-│   └── src/python/              # Python implementation
-│       ├── document_scanner.py  # Core scanner
-│       ├── __init__.py          # Package init
-│       └── plugins/             # Extension plugins
-│
-├── 🌐 Web Application
-│   ├── web/
-│   │   ├── index.html           # Main interface
-│   │   ├── styles.css           # Minimalist design
-│   │   ├── script.js            # Processing engine
-│   │   └── workers/             # Web Workers for performance
-│   │       └── processor.js     # Background processing
-│
-├── 🧪 Testing & Quality
-│   ├── tests/
-│   │   ├── test_document_scanner.py
-│   │   ├── test_integration.py
-│   │   └── benchmarks/          # Performance tests
-│   └── .github/workflows/       # CI/CD automation
-│
-├── 📚 Documentation
-│   ├── docs/
-│   │   ├── api/                 # API documentation
-│   │   ├── tutorials/           # Step-by-step guides
-│   │   └── examples/            # Code examples
-│   ├── README.md                # This file
-│   ├── QUICKSTART.md            # Quick start guide
-│   ├── CONTRIBUTING.md          # Contribution guidelines
-│   └── CHANGELOG.md             # Version history
-│
-└── 📦 Assets & Config
-    ├── examples/                # Sample images
-    ├── outputs/                 # Processing results
-    └── requirements.txt         # Python dependencies
+document-scanner-cv/
+├── src/matlab/
+│   ├── DocumentScanner.m        # Scanner class
+│   ├── run_scanner.m            # Example usage
+│   ├── finalprojectimage1.m
+│   └── finalprojectimage2.m
+├── src/python/
+│   └── document_scanner.py      # Scanner class (no package init or plugins/)
+├── web/
+│   ├── index.html
+│   ├── styles.css
+│   ├── script.js                # In-page preview (no Web Workers)
+│   └── examples/
+├── tests/
+│   └── test_document_scanner.py
+├── .github/workflows/
+│   ├── ci.yml
+│   └── pages.yml
+├── docs/
+│   ├── screenshots/
+│   └── finalproject.latex
+├── examples/                    # Sample images
+├── requirements.txt
+├── README.md
+├── QUICKSTART.md
+├── CONTRIBUTING.md
+└── CHANGELOG.md
 ```
 
 ---
 
 ## 🔬 Advanced Features
 
-### 1. **Intelligent Edge Detection**
+The shipped Python and MATLAB scanners take an image path, run Sobel edges and a Hough transform, accept four manual corners, and rectify to a letter-size page at 300 DPI. Automatic corner detection, GPU backends, and plugin APIs are not in this repository.
 
 ```python
-# Adaptive threshold with Otsu's method
-scanner.edge_threshold = 'auto'  # Automatic threshold selection
-scanner.detect_edges(method='canny', sigma=1.4)
+import numpy as np
+from src.python.document_scanner import DocumentScanner
 
-# Multi-scale detection
-scanner.detect_edges_multiscale(scales=[1.0, 1.5, 2.0])
+scanner = DocumentScanner("examples/input1.png")
+scanner.sigma = 1.4
+scanner.edge_threshold = 290
+scanner.detect_edges()
+scanner.compute_hough_transform()
+scanner.detect_lines()
+
+# Automatic corner detection raises NotImplementedError.
+scanner.find_corners(np.array([
+    [50, 50], [350, 50], [350, 450], [50, 450]
+], dtype=np.float32))
+
+scanner.rectify_image()            # default 8.5" x 11" at 300 DPI (2550 x 3300)
+# scanner.rectify_image(400, 500)  # custom width, height
+scanner.visualize("rectified", save_path="preview.png")
+scanner.save_rectified("output.png")
 ```
 
-### 2. **GPU-Accelerated Processing**
-
-```python
-# Enable CUDA acceleration (if available)
-scanner.use_gpu = True
-scanner.compute_hough_transform(backend='cuda')
-
-# Benchmark: 10x faster on NVIDIA RTX 3080
-```
-
-### 3. **Deep Learning Integration**
-
-```python
-# Use pre-trained models for corner detection
-from document_scanner.plugins import DeepCornerDetector
-
-detector = DeepCornerDetector(model='efficientnet-b0')
-corners = detector.predict(scanner.input_image)
-scanner.find_corners(corners)
-```
-
-### 4. **Batch Processing**
-
-```python
-# Process multiple documents
-from pathlib import Path
-
-images = Path('documents/').glob('*.jpg')
-for img_path in images:
-    scanner = DocumentScanner(str(img_path))
-    scanner.process_pipeline().save_rectified(f'output/{img_path.stem}.png')
-```
-
-### 5. **Real-time Processing**
-
-```python
-# Process video stream
-import cv2
-
-cap = cv2.VideoCapture(0)
-while True:
-    ret, frame = cap.read()
-    scanner = DocumentScanner(frame)
-    result = scanner.quick_rectify()  # Optimized for speed
-    cv2.imshow('Rectified', result)
-```
+The browser demo in `web/` is a separate in-page preview. It samples the document to 850 x 1100 (about 100 DPI), not the 300 DPI Python default.
 
 ---
 
@@ -246,93 +193,61 @@ while True:
 
 ### Python API
 
-#### DocumentScanner Class
-
 ```python
 class DocumentScanner:
-    """
-    Advanced document scanner with computer vision algorithms.
-    
-    Attributes:
-        input_image (np.ndarray): Original input image
-        edge_threshold (int|str): Edge detection threshold (default: 290 or 'auto')
-        sigma (float): Gaussian blur sigma (default: 1.0)
-        use_gpu (bool): Enable GPU acceleration (default: False)
-    """
-    
-    def __init__(self, image_path: str | np.ndarray, **kwargs):
-        """Initialize scanner with image path or array."""
-        
-    def detect_edges(
-        self, 
-        method: str = 'sobel',  # 'sobel', 'canny', 'prewitt'
-        sigma: float = None
-    ) -> 'DocumentScanner':
-        """Detect edges using specified method."""
-        
-    def compute_hough_transform(
-        self,
-        backend: str = 'cpu',  # 'cpu', 'cuda', 'opencl'
-        theta_res: float = 1.0,
-        rho_res: float = 1.0
-    ) -> 'DocumentScanner':
-        """Compute Hough Transform for line detection."""
-        
-    def detect_lines(
-        self,
-        num_peaks: int = 6,
-        threshold: float = 0.5,
-        min_distance: int = 10
-    ) -> 'DocumentScanner':
-        """Detect lines from Hough peaks."""
-        
-    def find_corners(
-        self,
-        corners: np.ndarray = None,
-        method: str = 'manual'  # 'manual', 'auto', 'deep'
-    ) -> 'DocumentScanner':
-        """Find document corners."""
-        
+    """Scan a document photo from a filesystem path."""
+
+    input_image: np.ndarray
+    sigma: float = 1.0
+    edge_threshold: int = 290
+    num_peaks: int = 6
+    peak_threshold: float = 0.5
+
+    def __init__(self, image_path: str):
+        """Load an image file. Raises ValueError if the path cannot be read."""
+
+    def detect_edges(self) -> DocumentScanner:
+        """Gaussian smooth, then Sobel magnitude against edge_threshold."""
+
+    def compute_hough_transform(self) -> DocumentScanner:
+        """Build the Hough accumulator from the edge image."""
+
+    def detect_lines(self) -> DocumentScanner:
+        """Pick peaks using num_peaks and peak_threshold."""
+
+    def find_corners(self, manual_corners: np.ndarray | None = None) -> DocumentScanner:
+        """Set four (x, y) corners. Omitting them raises NotImplementedError."""
+
     def rectify_image(
-        self,
-        output_size: tuple = (2550, 3300),  # 8.5"x11" @ 300 DPI
-        interpolation: str = 'cubic'  # 'linear', 'cubic', 'lanczos'
-    ) -> 'DocumentScanner':
-        """Rectify document using homography."""
-        
-    def process_pipeline(self) -> 'DocumentScanner':
-        """Run complete processing pipeline."""
-        
-    def save_rectified(
-        self,
-        path: str,
-        format: str = 'png',  # 'png', 'jpg', 'pdf'
-        quality: int = 95
-    ):
-        """Save rectified image."""
+        self, output_width: int | None = None, output_height: int | None = None
+    ) -> DocumentScanner:
+        """Warp to a letter-size page at 300 DPI (2550 x 3300) unless sizes are given."""
+
+    def visualize(self, step: str, save_path: str | None = None) -> None:
+        """Show edges, hough, lines, corners, or rectified. Optionally save the figure."""
+
+    def save_rectified(self, output_path: str) -> None:
+        """Write the rectified image with cv2.imwrite."""
 ```
 
 ### MATLAB API
 
 ```matlab
-% Create scanner
 scanner = DocumentScanner(imagePath);
-
-% Configure parameters
 scanner.sigma = 1.4;
-scanner.edgeThreshold = 'auto';
+scanner.edgeThreshold = 290;
 
-% Process
 scanner = scanner.detectEdges() ...
                 .computeHoughTransform() ...
                 .detectLines() ...
                 .findCorners(corners) ...
-                .rectifyImage([2550, 3300]);
+                .rectifyImage();           % default 8.5" x 11" at 300 DPI
+% scanner = scanner.rectifyImage(2550, 3300);
 
-% Visualize and save
-scanner.visualize('all');
-scanner.saveRectified('output.png');
+scanner.visualize('rectified');           % edges | hough | lines | corners | rectified
 ```
+
+There is no `saveRectified` method in the MATLAB class. Write `obj.rectifiedImage` with `imwrite` after rectification.
 
 ---
 
@@ -426,153 +341,55 @@ Corner Points → DLT Algorithm → SVD Decomposition → Homography Matrix → 
 
 ## 📊 Performance Benchmarks
 
-### Processing Speed (512×512 image)
+This repository does not ship a timed benchmark suite, a GPU/WebAssembly build, or a DocBank evaluation. Earlier numbers in this section were not reproducible from the code here, so they have been removed.
 
-| Implementation | Edge Detection | Hough Transform | Total Pipeline |
-|---------------|----------------|-----------------|----------------|
-| **Python (CPU)** | 0.3s | 1.5s | 3.8s |
-| **Python (GPU)** | 0.1s | 0.4s | 1.2s |
-| **MATLAB** | 0.5s | 2.0s | 5.5s |
-| **JavaScript** | 0.8s | 3.0s | 5.3s |
-| **WebAssembly** | 0.4s | 1.8s | 3.5s |
+Python and MATLAB output letter-size pages at 300 DPI by default. The browser demo is a lighter 100 DPI preview.
 
-### Accuracy Metrics
-
-| Metric | Score | Benchmark |
-|--------|-------|-----------|
-| **Corner Detection** | 98.5% | IoU > 0.95 |
-| **Line Detection** | 96.2% | F1 Score |
-| **Rectification** | 99.1% | SSIM |
-
-*Tested on 1000 document images from DocBank dataset*
-
----
 
 ## 🛠️ Advanced Configuration
 
-### Python Configuration File
+There is no `ScannerConfig` class and `DocumentScanner` does not take a config object. Tune the instance attributes, then call the pipeline methods:
 
 ```python
-# config.py
-from dataclasses import dataclass
-
-@dataclass
-class ScannerConfig:
-    # Edge Detection
-    edge_method: str = 'sobel'
-    edge_threshold: int | str = 'auto'
-    sigma: float = 1.4
-    
-    # Hough Transform
-    theta_resolution: float = 1.0
-    rho_resolution: float = 1.0
-    use_gpu: bool = False
-    
-    # Corner Detection
-    corner_method: str = 'manual'  # 'manual', 'auto', 'deep'
-    corner_refinement: bool = True
-    
-    # Rectification
-    output_dpi: int = 300
-    output_format: str = 'A4'  # 'A4', 'Letter', 'Custom'
-    interpolation: str = 'cubic'
-    
-    # Performance
-    num_threads: int = -1  # -1 = auto
-    batch_size: int = 1
-    cache_enabled: bool = True
-
-# Usage
-from config import ScannerConfig
-config = ScannerConfig(use_gpu=True, edge_threshold=150)
-scanner = DocumentScanner('image.png', config=config)
+scanner = DocumentScanner("examples/input1.png")
+scanner.sigma = 1.4
+scanner.edge_threshold = 150
+scanner.num_peaks = 6
+scanner.peak_threshold = 0.5
 ```
+
+MATLAB uses the same idea: set `scanner.sigma`, `scanner.edgeThreshold`, `scanner.numPeaks`, and `scanner.peakThreshold` before `detectEdges()`.
 
 ---
 
 ## 🧪 Testing
 
-### Run All Tests
+The repository ships a Python unit suite in `tests/test_document_scanner.py`. There is no MATLAB test runner, no `web` npm test script, and no `tests/integration/` tree.
 
 ```bash
-# Python tests with coverage
-pytest tests/ -v --cov=src/python --cov-report=html
-
-# MATLAB tests
-matlab -batch "run('tests/matlab/run_all_tests.m')"
-
-# JavaScript tests
-cd web && npm test
-
-# Integration tests
-pytest tests/integration/ -v --slow
+# From the repo root, with the Python dependencies installed
+pytest tests/ -v
 ```
 
 ### Continuous Integration
 
-Our CI/CD pipeline runs:
-- ✅ Unit tests (Python 3.10, 3.11, 3.12, 3.13)
-- ✅ Integration tests
-- ✅ Code linting (flake8, black, mypy)
-- ✅ Security scanning (bandit)
-- ✅ Performance benchmarks
-- ✅ Documentation build
+The workflow in `.github/workflows/ci.yml` currently:
+- Runs the Python tests on 3.10, 3.11, 3.12, and 3.13
+- Lints `src/python` with flake8 and black
+- Checks that README.md and CONTRIBUTING.md exist
+- Confirms the web demo files exist and runs ESLint on `web/script.js` (non-blocking)
 
 ---
 
 ## 🚀 Deployment
 
-### Docker
+This repository does not include a Dockerfile, Kubernetes manifest, or Lambda handler, and `DocumentScanner` only accepts a filesystem path (not raw bytes).
+
+Run the Python or MATLAB classes locally, or serve the static demo:
 
 ```bash
-# Build image
-docker build -t document-scanner .
-
-# Run container
-docker run -p 8000:8000 document-scanner
-
-# Access at http://localhost:8000
-```
-
-### Kubernetes
-
-```yaml
-# deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: document-scanner
-spec:
-  replicas: 3
-  template:
-    spec:
-      containers:
-      - name: scanner
-        image: document-scanner:latest
-        ports:
-        - containerPort: 8000
-```
-
-### Serverless (AWS Lambda)
-
-```python
-# lambda_function.py
-from document_scanner import DocumentScanner
-import base64
-
-def lambda_handler(event, context):
-    # Decode image
-    image_data = base64.b64decode(event['image'])
-    
-    # Process
-    scanner = DocumentScanner(image_data)
-    result = scanner.process_pipeline()
-    
-    # Return
-    return {
-        'statusCode': 200,
-        'body': base64.b64encode(result).decode()
-    }
+python -m http.server 8000 --directory web
+# then open http://localhost:8000
 ```
 
 ---
@@ -585,18 +402,15 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ```bash
 # Clone repository
-git clone https://github.com/mangeshraut712/Document-Scanner---Computer-Vision-Project.git
-cd Document-Scanner---Computer-Vision-Project
+git clone https://github.com/mangeshraut712/document-scanner-cv.git
+cd document-scanner-cv
 
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # or `venv\Scripts\activate` on Windows
 
-# Install development dependencies
-pip install -r requirements-dev.txt
-
-# Install pre-commit hooks
-pre-commit install
+# Install dependencies (there is no requirements-dev.txt or pre-commit hook)
+pip install -r requirements.txt
 
 # Run tests
 pytest tests/ -v
@@ -616,9 +430,9 @@ pytest tests/ -v
 ## 📚 Resources
 
 ### Documentation
-- [API Reference](docs/api/README.md)
-- [Tutorials](docs/tutorials/README.md)
-- [Examples](docs/examples/README.md)
+- API Reference in this README
+- [QUICKSTART.md](QUICKSTART.md)
+- [web/README.md](web/README.md)
 
 ### Research Papers
 1. Canny, J. (1986). *A Computational Approach to Edge Detection*
@@ -663,9 +477,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### ⭐ Star this repository if you find it helpful!
 
-[Report Bug](https://github.com/mangeshraut712/Document-Scanner---Computer-Vision-Project/issues) · 
-[Request Feature](https://github.com/mangeshraut712/Document-Scanner---Computer-Vision-Project/issues) · 
-[Discussions](https://github.com/mangeshraut712/Document-Scanner---Computer-Vision-Project/discussions)
+[Report Bug](https://github.com/mangeshraut712/document-scanner-cv/issues) · 
+[Request Feature](https://github.com/mangeshraut712/document-scanner-cv/issues) · 
+[Discussions](https://github.com/mangeshraut712/document-scanner-cv/discussions)
 
 </div>
 
